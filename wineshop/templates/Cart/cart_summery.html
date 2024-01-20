@@ -1,0 +1,158 @@
+{%  extends 'base.html' %}
+
+{% block content %}
+        <!-- Header-->
+        <header class="bg-dark py-5">
+            <div class="container px-4 px-lg-5 my-5">
+                <div class="text-center text-white">
+                    <h1 class="display-4 fw-bolder">Shopping cart</h1>
+                    <p class="lead fw-normal text-white-50 mb-0">View your cart</p>
+                </div>
+            </div>
+        </header>
+        <br/><br/>
+    {% if cart_products %}
+    {% for wine in cart_products %}
+        <div class="card mb-3">
+  <div class="row g-0">
+    <div class="col-md-4">
+      <img src="{{ wine.image.url }} " width="200" class="img-fluid rounded-start" alt="...">
+    </div>
+    <div class="col-md-8">
+      <div class="card-body">
+                 <center>
+        <h5 class="card-title">{{ wine.title }}</h5>
+        <p class="card-text">{{ wine.description }}</p>
+                     {% if wine.is_sale %}
+                        <div class="text-center">
+                                    <br/>
+                                    <strike>{{ wine.price }} BGN</strike>
+                                    {{ wine.sale_price }} BGN
+                                    <br>
+                        </div>
+                     {% else %}
+                         <div class="text-center">
+                         <br/>
+                                    {{ wine.price }} BGN
+                         <br/>
+                         </div>
+                     {% endif %}
+        
+        
+        
+                     <div class="row justify-content-center">
+                     <div class="col-md-2">Quantity</div>
+                     <div class="col-md-2">
+                    <select class="form-select form-select-sm" id="select{{ wine.id }}">
+                        
+                            
+                            {% for key, value in quantities.items %}
+                            
+                                {% if key ==  wine.id|slugify %}
+                                  <option selected>  {{ value }} </option>
+                                {% endif %}
+                                
+                            {% endfor %}
+                        
+                        
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                    </select>
+                     </div>
+                     </div>
+                    </div>
+                <center>
+                    <a href="{% url 'home' %}" class="btn btn-secondary">Back</a>
+                    <button type="button" data-index="{{wine.id}}" class="btn btn-secondary update-cart">Update</button>
+                    <button type="button" data-index="{{wine.id}}" class="btn btn-danger delete-product">Remove</button>
+                 </center>
+      </div>
+    </div>
+  </div>
+</div>
+    
+        
+        
+    {% endfor %}
+        <h3 align="left">Total: {{ totals }} BGN</h3>
+        {% else %}
+        <center>
+            <h2>Your Cart Is Empty</h2>
+        </center>
+        
+    {% endif %}
+    
+        <br/><br/><br/><br/><br/><br/><br/><br/>
+
+
+
+<script>
+// Update Cart
+$(document).on('click', '.update-cart', function(e){
+    e.preventDefault();
+    // grab the product id
+    var wineid = $(this).data('index');
+
+    $.ajax({
+    type: 'POST',
+    url: '{% url 'cart_update' %}',
+    data: {
+      wine_id: $(this).data('index'),
+      wine_qty: $('#select' + wineid + ' option:selected').text(),
+      csrfmiddlewaretoken: '{{ csrf_token }}',
+      action: 'post'
+    },
+    success: function(json){
+        //console.log(json)
+        //document.getElementById("cart_quantity").textContent = json.qty
+        location.reload();
+    },
+
+    error: function(xhr, errmsg, err){
+
+    }
+
+
+    });
+
+})
+
+// Delete Item From Cart
+$(document).on('click', '.delete-product', function(e){
+    e.preventDefault();
+    // grab the product id
+    //var productid = $(this).data('index');
+
+    $.ajax({
+    type: 'POST',
+    url: '{% url 'cart_delete' %}',
+    data: {
+      wine_id: $(this).data('index'),
+      csrfmiddlewaretoken: '{{ csrf_token }}',
+      action: 'post'
+    },
+    success: function(json){
+        //console.log(json)
+        //document.getElementById("cart_quantity").textContent = json.qty
+        location.reload();
+    },
+
+    error: function(xhr, errmsg, err){
+
+    }
+
+
+    });
+
+})
+
+
+
+
+</script>
+
+{% endblock %}
